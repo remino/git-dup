@@ -1,0 +1,116 @@
+#!/bin/sh
+# git-dup
+
+VERSION='1.0.0'
+
+git_dup_main() {
+	trap _exit INT TERM
+
+	E_ARGS=16
+	E_FAILED_CD=17
+	E_DIR_NOT_EMPTY=18
+	E_MISSING_DIR=19
+
+	SCRIPT_INV="$( basename "$0" )"
+	SCRIPT_PATH="$( readlink -f "$0" )"
+	SCRIPT_NAME="$( basename "$SCRIPT_PATH" )"
+
+	while getopts hv opt
+	do
+		case $opt in
+			h) cmd=help ;;
+			v) cmd=version ;;
+			*) _invalid_opt ;;
+		esac
+	done
+
+	shift "$(( OPTIND - 1 ))"
+
+	[ -z "$cmd" ] && cmd="process"
+
+	case "$cmd" in
+		help|process|version) "git_dup_$cmd" "$@" ;;
+		*) _invalid_cmd ;;
+	esac
+
+	_exit
+}
+
+git_dup_help() {
+cat <<USAGE
+$SCRIPT_NAME $VERSION
+
+USAGE: $SCRIPT_INV [<options>] <from> [<to>]
+
+Copy a local git repository from one location to another.
+
+If <to> is not specified, the repository will be copied to the current
+working directory.
+
+OPTIONS:
+
+	-h        Show this help screen.
+	-v        Show script name and version number.
+
+USAGE
+}
+
+git_dup_process() {
+	from="$1"
+	to="$2"
+
+	[ -z "$from" ] && _fatal "$E_ARGS" "Specify source argument."
+	[ -z "$to" ] && to="."
+
+	[ -d "$to" ] && _fatal "$E_MISSING_DIR" "Directory already exists: $to"
+	[ "$( ls -A "$to" )" ] && _fatal "$E_DIR_NOT_EMPTY" "Directory is not empty: $to"
+
+	_echo "$from => $to"
+
+	mkdir -p "$to"
+	cp -r "$from/.git" "$to/.git"
+	cd "$to" || _fatal "$E_FAILED_CD" "Failed to change directory: $to"
+	git checkout .
+
+	_echo "Repository copied successfully"
+}
+
+git_dup_version() {
+	_echo "$SCRIPT_NAME $VERSION"
+}
+
+_echo() {
+	echo "$@"
+}
+
+_error() {
+	_echo "$@" >&2
+}
+
+_exit() {
+	exit_code=$?
+	exit $exit_code
+}
+
+_fatal() {
+	exit_code="$1"
+	shift
+	_error "$@"
+	exit "$exit_code"
+}
+
+_invalid_cmd() {
+	_error "Invalid command: $cmd"
+	_echo
+	git_dup_help
+	exit $E_ARGS
+}
+
+_invalid_opt() {
+	_error "Invalid option: $opt"
+	_echo
+	git_dup_help
+	exit $E_ARGS
+}
+
+git_dup_main "$@"
