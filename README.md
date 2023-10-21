@@ -14,6 +14,7 @@ working directory.
 OPTIONS:
 
 	-h        Show this help screen.
+	-i        Reinitalize the copied repository.
 	-v        Show script name and version number.
 
 ```

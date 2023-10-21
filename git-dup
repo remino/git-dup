@@ -15,10 +15,14 @@ git_dup_main() {
 	SCRIPT_PATH="$( readlink -f "$0" )"
 	SCRIPT_NAME="$( basename "$SCRIPT_PATH" )"
 
-	while getopts hv opt
+	cmd=
+	INIT=0
+
+	while getopts hiv opt
 	do
 		case $opt in
 			h) cmd=help ;;
+			i) INIT=1 ;;
 			v) cmd=version ;;
 			*) _invalid_opt ;;
 		esac
@@ -50,6 +54,7 @@ working directory.
 OPTIONS:
 
 	-h        Show this help screen.
+	-i        Reinitalize the copied repository.
 	-v        Show script name and version number.
 
 USAGE
@@ -69,12 +74,23 @@ git_dup_process() {
 
 	mkdir -p "$to"
 	cp -r "$from/.git" "$to/.git"
-	cd "$to" || _fatal "$E_FAILED_CD" "Failed to change directory: $to"
+	_cd "$to"
 	git checkout .
+
+	if [ "$INIT" -eq 1 ]
+	then
+		rm -rf .git
+		git init
+		git add .
+	fi
 }
 
 git_dup_version() {
 	_echo "$SCRIPT_NAME $VERSION"
+}
+
+_cd() {
+	cd "$1" || _fatal "$E_FAILED_CD" "Failed to change directory: $1"
 }
 
 _echo() {
