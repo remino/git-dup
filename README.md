@@ -2,7 +2,7 @@ git-dup
 ===
 
 ```
-git-dup 1.0.0
+git-dup 1.1.0
 
 USAGE: git-dup [<options>] <from> [<to>]
 
