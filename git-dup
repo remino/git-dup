@@ -63,7 +63,7 @@ git_dup_process() {
 	[ -z "$to" ] && to="."
 
 	[ -d "$to" ] && _fatal "$E_MISSING_DIR" "Directory already exists: $to"
-	[ "$( ls -A "$to" )" ] && _fatal "$E_DIR_NOT_EMPTY" "Directory is not empty: $to"
+	[ "$( ls -A "$to" 2>/dev/null )" ] && _fatal "$E_DIR_NOT_EMPTY" "Directory is not empty: $to"
 
 	_echo "$from => $to"
 
