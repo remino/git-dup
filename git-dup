@@ -71,8 +71,6 @@ git_dup_process() {
 	cp -r "$from/.git" "$to/.git"
 	cd "$to" || _fatal "$E_FAILED_CD" "Failed to change directory: $to"
 	git checkout .
-
-	_echo "Repository copied successfully"
 }
 
 git_dup_version() {
